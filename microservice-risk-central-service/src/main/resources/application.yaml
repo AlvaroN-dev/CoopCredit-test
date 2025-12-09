@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: microservice-risk-central-service

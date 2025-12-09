@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.8</version>
+    </parent>
+
+
+  <groupId>org.example</groupId>
+  <artifactId>microservices</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+
+  <name>microservices</name>
+   <packaging>pom</packaging>
+
+
+    <modules>
+        <module>microservice-config</module>
+        <module>microservice-eureka</module>
+        <module>microservice-gateway</module>
+        <module>microservice-auth</module>
+        <module>microservice-credit-application-service</module>
+        <module>microservice-risk-central-service</module>
+    </modules>
+
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mave.compiler.source>17</mave.compiler.source>
+        <mave.compiler.target>17</mave.compiler.target>
+   </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.42</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.14</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.5.8</version>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
