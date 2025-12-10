@@ -1,12 +1,17 @@
 package com.riwi.microservice.coopcredit.credit.application.dto.risk;
 
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 /**
  * Request DTO for creating a Risk Evaluation.
  */
+
+@Getter
+@Setter
 public class CreateRiskEvaluationRequest {
 
     @NotNull(message = "El ID de la solicitud de crédito es obligatorio")
@@ -42,31 +47,4 @@ public class CreateRiskEvaluationRequest {
     @Size(max = 100, message = "El nombre del evaluador no puede exceder 100 caracteres")
     private String evaluatedBy;
 
-    // Getters and Setters
-    public Long getCreditApplicationId() { return creditApplicationId; }
-    public void setCreditApplicationId(Long creditApplicationId) { this.creditApplicationId = creditApplicationId; }
-
-    public Integer getCreditScore() { return creditScore; }
-    public void setCreditScore(Integer creditScore) { this.creditScore = creditScore; }
-
-    public BigDecimal getDebtToIncomeRatio() { return debtToIncomeRatio; }
-    public void setDebtToIncomeRatio(BigDecimal debtToIncomeRatio) { this.debtToIncomeRatio = debtToIncomeRatio; }
-
-    public Boolean getHasDefaultHistory() { return hasDefaultHistory; }
-    public void setHasDefaultHistory(Boolean hasDefaultHistory) { this.hasDefaultHistory = hasDefaultHistory; }
-
-    public Integer getYearsEmployed() { return yearsEmployed; }
-    public void setYearsEmployed(Integer yearsEmployed) { this.yearsEmployed = yearsEmployed; }
-
-    public Boolean getHasGuarantor() { return hasGuarantor; }
-    public void setHasGuarantor(Boolean hasGuarantor) { this.hasGuarantor = hasGuarantor; }
-
-    public BigDecimal getCollateralValue() { return collateralValue; }
-    public void setCollateralValue(BigDecimal collateralValue) { this.collateralValue = collateralValue; }
-
-    public String getEvaluationNotes() { return evaluationNotes; }
-    public void setEvaluationNotes(String evaluationNotes) { this.evaluationNotes = evaluationNotes; }
-
-    public String getEvaluatedBy() { return evaluatedBy; }
-    public void setEvaluatedBy(String evaluatedBy) { this.evaluatedBy = evaluatedBy; }
 }

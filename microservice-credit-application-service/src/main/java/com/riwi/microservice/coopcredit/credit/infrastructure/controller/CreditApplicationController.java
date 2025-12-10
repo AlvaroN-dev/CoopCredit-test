@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/credit/applications")
-@Tag(name = "💳 Solicitudes de Crédito", description = "Gestión de solicitudes de crédito cooperativo")
+@Tag(name = "Solicitudes de Crédito", description = "Gestión de solicitudes de crédito cooperativo")
 @SecurityRequirement(name = "bearerAuth")
 public class CreditApplicationController {
 

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/credit/affiliates")
-@Tag(name = "👥 Afiliados", description = "Gestión de afiliados cooperativos")
+@Tag(name = "Afiliados", description = "Gestión de afiliados cooperativos")
 @SecurityRequirement(name = "bearerAuth")
 public class AffiliateController {
 

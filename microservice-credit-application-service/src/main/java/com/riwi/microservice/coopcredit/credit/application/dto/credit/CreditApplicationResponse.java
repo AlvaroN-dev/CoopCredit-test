@@ -4,6 +4,10 @@ import com.riwi.microservice.coopcredit.credit.application.dto.affiliate.Affilia
 import com.riwi.microservice.coopcredit.credit.application.dto.risk.RiskEvaluationResponse;
 import com.riwi.microservice.coopcredit.credit.domain.models.enums.CreditApplicationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,6 +15,11 @@ import java.time.LocalDateTime;
 /**
  * Response DTO for Credit Application.
  */
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "Response DTO for Credit Application")
 public class CreditApplicationResponse {
     
@@ -46,55 +55,4 @@ public class CreditApplicationResponse {
     private AffiliateResponse affiliate;
     @Schema(description = "Risk evaluation details")
     private RiskEvaluationResponse riskEvaluation;
-
-    public CreditApplicationResponse() {}
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getApplicationNumber() { return applicationNumber; }
-    public void setApplicationNumber(String applicationNumber) { this.applicationNumber = applicationNumber; }
-
-    public BigDecimal getRequestedAmount() { return requestedAmount; }
-    public void setRequestedAmount(BigDecimal requestedAmount) { this.requestedAmount = requestedAmount; }
-
-    public Integer getTermMonths() { return termMonths; }
-    public void setTermMonths(Integer termMonths) { this.termMonths = termMonths; }
-
-    public BigDecimal getInterestRate() { return interestRate; }
-    public void setInterestRate(BigDecimal interestRate) { this.interestRate = interestRate; }
-
-    public BigDecimal getMonthlyPayment() { return monthlyPayment; }
-    public void setMonthlyPayment(BigDecimal monthlyPayment) { this.monthlyPayment = monthlyPayment; }
-
-    public String getPurpose() { return purpose; }
-    public void setPurpose(String purpose) { this.purpose = purpose; }
-
-    public CreditApplicationStatus getStatus() { return status; }
-    public void setStatus(CreditApplicationStatus status) { this.status = status; }
-
-    public String getComments() { return comments; }
-    public void setComments(String comments) { this.comments = comments; }
-
-    public LocalDateTime getApplicationDate() { return applicationDate; }
-    public void setApplicationDate(LocalDateTime applicationDate) { this.applicationDate = applicationDate; }
-
-    public LocalDateTime getReviewDate() { return reviewDate; }
-    public void setReviewDate(LocalDateTime reviewDate) { this.reviewDate = reviewDate; }
-
-    public LocalDateTime getDecisionDate() { return decisionDate; }
-    public void setDecisionDate(LocalDateTime decisionDate) { this.decisionDate = decisionDate; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public AffiliateResponse getAffiliate() { return affiliate; }
-    public void setAffiliate(AffiliateResponse affiliate) { this.affiliate = affiliate; }
-
-    public RiskEvaluationResponse getRiskEvaluation() { return riskEvaluation; }
-    public void setRiskEvaluation(RiskEvaluationResponse riskEvaluation) { this.riskEvaluation = riskEvaluation; }
 }

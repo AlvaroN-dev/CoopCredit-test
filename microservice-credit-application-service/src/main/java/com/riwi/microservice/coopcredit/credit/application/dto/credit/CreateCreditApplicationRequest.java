@@ -2,12 +2,16 @@ package com.riwi.microservice.coopcredit.credit.application.dto.credit;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 /**
  * Request DTO for creating a Credit Application.
  */
+@Getter
+@Setter
 @Schema(description = "Request DTO for creating a Credit Application")
 public class CreateCreditApplicationRequest {
 
@@ -39,19 +43,4 @@ public class CreateCreditApplicationRequest {
     @Schema(description = "Purpose of the credit", example = "Home improvement")
     private String purpose;
 
-    // Getters and Setters
-    public Long getAffiliateId() { return affiliateId; }
-    public void setAffiliateId(Long affiliateId) { this.affiliateId = affiliateId; }
-
-    public BigDecimal getRequestedAmount() { return requestedAmount; }
-    public void setRequestedAmount(BigDecimal requestedAmount) { this.requestedAmount = requestedAmount; }
-
-    public Integer getTermMonths() { return termMonths; }
-    public void setTermMonths(Integer termMonths) { this.termMonths = termMonths; }
-
-    public BigDecimal getInterestRate() { return interestRate; }
-    public void setInterestRate(BigDecimal interestRate) { this.interestRate = interestRate; }
-
-    public String getPurpose() { return purpose; }
-    public void setPurpose(String purpose) { this.purpose = purpose; }
 }

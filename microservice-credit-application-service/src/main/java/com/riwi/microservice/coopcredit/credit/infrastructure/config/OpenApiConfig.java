@@ -41,10 +41,10 @@ public class OpenApiConfig {
                                 # API de Gestión de Créditos Cooperativos
                                 
                                 Esta API proporciona servicios para:
-                                - 🔐 **Autenticación**: Registro y login de usuarios con JWT
-                                - 👥 **Gestión de Afiliados**: CRUD de afiliados cooperativos
-                                - 💳 **Solicitudes de Crédito**: Crear y gestionar aplicaciones de crédito
-                                - ⚠️ **Evaluación de Riesgo**: Análisis automático de riesgo crediticio
+                                - **Autenticación**: Registro y login de usuarios con JWT
+                                - **Gestión de Afiliados**: CRUD de afiliados cooperativos
+                                - **Solicitudes de Crédito**: Crear y gestionar aplicaciones de crédito
+                                - **Evaluación de Riesgo**: Análisis automático de riesgo crediticio
                                 
                                 ## Autenticación
                                 La mayoría de los endpoints requieren autenticación mediante token JWT.
@@ -52,7 +52,7 @@ public class OpenApiConfig {
                                 **Pasos para autenticarse:**
                                 1. Registrar usuario: `POST /auth/register` (no requiere token)
                                 2. Hacer login: `POST /auth/login` (devuelve el token JWT)
-                                3. Usar el token en los demás endpoints haciendo clic en el botón **Authorize** 🔒
+                                3. Usar el token en los demás endpoints haciendo clic en el botón **Authorize** 
                                 
                                 ## Roles
                                 - **AFILIADO**: Puede crear solicitudes para sí mismo

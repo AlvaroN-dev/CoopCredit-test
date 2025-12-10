@@ -1,12 +1,17 @@
 package com.riwi.microservice.coopcredit.credit.application.dto.affiliate;
 
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 /**
  * Request DTO for updating an Affiliate.
  */
+
+@Getter
+@Setter
 public class UpdateAffiliateRequest {
 
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
@@ -28,22 +33,4 @@ public class UpdateAffiliateRequest {
     @DecimalMin(value = "0.01", message = "El salario debe ser mayor a cero")
     private BigDecimal salary;
 
-    // Getters and Setters
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public BigDecimal getSalary() { return salary; }
-    public void setSalary(BigDecimal salary) { this.salary = salary; }
 }

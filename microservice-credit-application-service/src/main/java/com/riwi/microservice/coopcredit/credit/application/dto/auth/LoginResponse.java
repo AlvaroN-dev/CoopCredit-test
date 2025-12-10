@@ -1,12 +1,16 @@
 package com.riwi.microservice.coopcredit.credit.application.dto.auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 /**
  * DTO for login response (with JWT token).
  */
+@Getter
+@Setter
 @Schema(description = "Response after successful authentication")
 public class LoginResponse {
 
@@ -25,8 +29,6 @@ public class LoginResponse {
     @Schema(description = "User roles without ROLE_ prefix", example = "[\"AFILIADO\"]")
     private List<String> roles;
 
-    public LoginResponse() {
-    }
 
     public LoginResponse(String token, Long expiresIn, String username, List<String> roles) {
         this.token = token;
@@ -35,43 +37,4 @@ public class LoginResponse {
         this.roles = roles;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getTokenType() {
-        return tokenType;
-    }
-
-    public void setTokenType(String tokenType) {
-        this.tokenType = tokenType;
-    }
-
-    public Long getExpiresIn() {
-        return expiresIn;
-    }
-
-    public void setExpiresIn(Long expiresIn) {
-        this.expiresIn = expiresIn;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
-    }
 }

@@ -2,6 +2,8 @@ package com.riwi.microservice.coopcredit.credit.infrastructure.entities;
 
 import com.riwi.microservice.coopcredit.credit.domain.models.enums.CreditApplicationStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +11,9 @@ import java.time.LocalDateTime;
 /**
  * JPA Entity for Credit Application.
  */
+@Getter
+@Setter
+
 @Entity
 @Table(name = "credit_applications", indexes = {
         @Index(name = "idx_credit_application_number", columnList = "application_number", unique = true),
@@ -86,50 +91,5 @@ public class CreditApplicationEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getApplicationNumber() { return applicationNumber; }
-    public void setApplicationNumber(String applicationNumber) { this.applicationNumber = applicationNumber; }
-
-    public BigDecimal getRequestedAmount() { return requestedAmount; }
-    public void setRequestedAmount(BigDecimal requestedAmount) { this.requestedAmount = requestedAmount; }
-
-    public Integer getTermMonths() { return termMonths; }
-    public void setTermMonths(Integer termMonths) { this.termMonths = termMonths; }
-
-    public BigDecimal getInterestRate() { return interestRate; }
-    public void setInterestRate(BigDecimal interestRate) { this.interestRate = interestRate; }
-
-    public String getPurpose() { return purpose; }
-    public void setPurpose(String purpose) { this.purpose = purpose; }
-
-    public CreditApplicationStatus getStatus() { return status; }
-    public void setStatus(CreditApplicationStatus status) { this.status = status; }
-
-    public String getComments() { return comments; }
-    public void setComments(String comments) { this.comments = comments; }
-
-    public LocalDateTime getApplicationDate() { return applicationDate; }
-    public void setApplicationDate(LocalDateTime applicationDate) { this.applicationDate = applicationDate; }
-
-    public LocalDateTime getReviewDate() { return reviewDate; }
-    public void setReviewDate(LocalDateTime reviewDate) { this.reviewDate = reviewDate; }
-
-    public LocalDateTime getDecisionDate() { return decisionDate; }
-    public void setDecisionDate(LocalDateTime decisionDate) { this.decisionDate = decisionDate; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public AffiliateEntity getAffiliate() { return affiliate; }
-    public void setAffiliate(AffiliateEntity affiliate) { this.affiliate = affiliate; }
-
-    public RiskEvaluationEntity getRiskEvaluation() { return riskEvaluation; }
-    public void setRiskEvaluation(RiskEvaluationEntity riskEvaluation) { this.riskEvaluation = riskEvaluation; }
+    
 }
