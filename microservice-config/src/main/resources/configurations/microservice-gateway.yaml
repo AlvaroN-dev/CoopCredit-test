@@ -1,7 +1,3 @@
-eureka:
-  client:
-    register-with-eureka: false
-
 server:
   port: 8080
 
@@ -15,17 +11,9 @@ spring:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       routes:
-        # Auth Service - Public endpoints
-        - id: auth-service-public
-          uri: lb://microservice-auth
-          predicates:
-            - Path=/api/auth/login, /api/auth/register, /api/auth/validate
-          filters:
-            - StripPrefix=1
-        
-        # Auth Service - Protected endpoints
-        - id: auth-service-protected
-          uri: lb://microservice-auth
+        # Auth endpoints handled by Credit Service
+        - id: auth-endpoints
+          uri: lb://microservice-credit-application-service
           predicates:
             - Path=/api/auth/**
           filters:
@@ -46,6 +34,14 @@ spring:
             - Path=/api/risk/**
           filters:
             - StripPrefix=1
+        
+        # Swagger UI for Credit Service (includes Auth + Credit + Affiliates)
+        - id: credit-swagger-ui
+          uri: lb://microservice-credit-application-service
+          predicates:
+            - Path=/swagger-ui.html, /swagger-ui/**, /v3/api-docs/**, /swagger-resources/**
+          filters:
+            - RewritePath=/swagger-ui.html, /swagger-ui/index.html
 
 # JWT Configuration (must match auth service)
 jwt:
@@ -62,12 +58,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,metrics,prometheus
   endpoint:
     health:
       show-details: always
     gateway:
       enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 logging:
   level:

@@ -1,0 +1,114 @@
+@startuml Observability Architecture
+
+!theme plain
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title CoopCredit - Observability Architecture
+
+' ==================== MICROSERVICES ====================
+package "Microservices" as Services #AliceBlue {
+    component [Gateway\n:8080] as Gateway #CornflowerBlue {
+        port "actuator" as GW_Actuator
+    }
+    
+    component [Credit Service\n:8082] as Credit #LightSeaGreen {
+        port "actuator" as Credit_Actuator
+        component "Custom Metrics" as CustomMetrics {
+            [HttpMetricsInterceptor]
+            [AuthenticationMetrics]
+        }
+    }
+    
+    component [Risk Service\n:8083] as Risk #DarkSeaGreen {
+        port "actuator" as Risk_Actuator
+    }
+}
+
+' ==================== OBSERVABILITY STACK ====================
+package "Observability Stack" as ObservStack #LemonChiffon {
+    component [Prometheus\n:9090] as Prometheus #Orange {
+        database "Time Series DB" as TSDB
+        component "Scraper" as Scraper
+        component "PromQL Engine" as PromQL
+    }
+    
+    component [Grafana\n:3000] as Grafana #OrangeRed {
+        component "Dashboards" as Dashboards
+        component "Alerts" as Alerts
+        component "Data Sources" as DataSources
+    }
+}
+
+' ==================== METRICS ENDPOINTS ====================
+note right of Credit
+  **Exposed Metrics:**
+  - http_server_requests_seconds
+  - auth_login_success_total
+  - auth_login_failure_total
+  - auth_token_validation_*
+  - jvm_memory_used_bytes
+  - jdbc_connections_active
+  - spring_security_*
+end note
+
+note right of Prometheus
+  **Scraping Configuration:**
+  - Interval: 5 seconds
+  - Path: /actuator/prometheus
+  - Format: OpenMetrics
+  
+  **Access:**
+  - UI: http://localhost:9090
+  - Targets: /targets
+  - Graph: /graph
+end note
+
+note right of Grafana
+  **Access:**
+  - URL: http://localhost:3000
+  - User: admin / admin
+  
+  **Recommended Dashboards:**
+  - ID 12900: Spring Boot APM
+  - ID 4701: JVM Micrometer
+  - ID 10280: Spring Boot Stats
+end note
+
+' ==================== CONNECTIONS ====================
+Scraper --> GW_Actuator : "GET /actuator/prometheus\n(every 5s)"
+Scraper --> Credit_Actuator : "GET /actuator/prometheus\n(every 5s)"
+Scraper --> Risk_Actuator : "GET /actuator/prometheus\n(every 5s)"
+
+CustomMetrics ..> Credit_Actuator : "Register Metrics"
+
+Scraper --> TSDB : "Store Metrics"
+PromQL --> TSDB : "Query"
+
+DataSources --> PromQL : "PromQL Queries"
+Dashboards --> DataSources : "Fetch Data"
+Alerts --> DataSources : "Evaluate Rules"
+
+' ==================== ACTORS ====================
+actor "DevOps Engineer" as DevOps #Orange
+actor "Developer" as Dev #LightBlue
+
+DevOps --> Grafana : "View Dashboards"
+DevOps --> Prometheus : "Query Metrics"
+Dev --> Credit_Actuator : "Check Health"
+
+' ==================== METRICS FLOW ====================
+rectangle "Metrics Collection Flow" as Flow #LightYellow {
+    (1) "Application\nGenerates Metrics" as Step1
+    (2) "Micrometer\nFormats Metrics" as Step2
+    (3) "Actuator\nExposes Endpoint" as Step3
+    (4) "Prometheus\nScrapes Data" as Step4
+    (5) "Grafana\nVisualizes Data" as Step5
+}
+
+Step1 --> Step2
+Step2 --> Step3
+Step3 --> Step4
+Step4 --> Step5
+
+@enduml

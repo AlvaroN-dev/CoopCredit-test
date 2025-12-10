@@ -11,3 +11,15 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['microservice-credit-application-service:8082']
+
+  - job_name: 'microservice-risk-central-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['microservice-risk-central-service:8083']
+
+  - job_name: 'microservice-gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['microservice-gateway:8080']

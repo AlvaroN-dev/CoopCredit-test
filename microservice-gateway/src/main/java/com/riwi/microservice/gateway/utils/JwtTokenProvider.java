@@ -20,7 +20,7 @@ public class JwtTokenProvider {
     private final SecretKey secretKey;
 
     public JwtTokenProvider(
-            @Value("${jwt.secret:mySecretKeyForJwtTokenGenerationThatIsAtLeast256BitsLongAndSecure}") String secret) {
+            @Value("${JWT_SECRET}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 

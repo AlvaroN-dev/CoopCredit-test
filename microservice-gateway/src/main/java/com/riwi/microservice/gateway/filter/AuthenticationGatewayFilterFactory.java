@@ -40,6 +40,7 @@ public class AuthenticationGatewayFilterFactory
             }
 
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+           
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return onError(exchange, "Invalid Authorization header format", HttpStatus.UNAUTHORIZED);
             }

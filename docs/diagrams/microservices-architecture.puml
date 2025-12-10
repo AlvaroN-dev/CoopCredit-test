@@ -1,12 +1,13 @@
-@startuml CoopCredit - Diagrama de Microservicios
+@startuml CoopCredit - Microservices Architecture
 
 !theme plain
 skinparam componentStyle rectangle
 
-title Diagrama de Microservicios - CoopCredit
+title CoopCredit - Microservices Architecture with Observability
 
 ' ==================== CLIENTE ====================
-actor "Cliente\n(App/Browser)" as Client #LightBlue
+actor "Client\n(App/Browser)" as Client #LightBlue
+actor "DevOps Engineer" as DevOps #Orange
 
 ' ==================== CAPA EDGE ====================
 package "Edge Layer" as EdgeLayer #AliceBlue {
@@ -21,66 +22,110 @@ package "Infrastructure Services" as InfraServices #LightGray {
 
 ' ==================== MICROSERVICIOS DE NEGOCIO ====================
 package "Business Microservices" as BusinessServices #Honeydew {
-    component [Auth Service\n:8081] as AuthService #LightGreen
     component [Credit Service\n:8082] as CreditService #LightSeaGreen
+    note right of CreditService
+        **Actuator Endpoints:**
+        /actuator/health
+        /actuator/metrics
+        /actuator/prometheus
+        
+        **Custom Metrics:**
+        - HTTP Request Tracking
+        - Authentication Events
+        - JWT Token Validation
+    end note
+    
     component [Risk Service\n:8083] as RiskService #DarkSeaGreen
+    note right of RiskService
+        **Features:**
+        - Risk Assessment
+        - Credit Scoring
+        - Actuator Enabled
+    end note
 }
 
 ' ==================== CAPA DE DATOS ====================
 package "Data Layer" as DataLayer #LavenderBlush {
-    database "PostgreSQL Auth\n:5434" as DbAuth #SteelBlue
-    database "PostgreSQL Credit\n:5433" as DbCredit #SteelBlue
+    database "PostgreSQL\n:5433" as DbCredit #SteelBlue
+    note right of DbCredit
+        **Database:** credit_db
+        **Tables:**
+        - users, roles, user_roles
+        - affiliates
+        - credit_applications
+        - risk_evaluations
+    end note
 }
 
 ' ==================== OBSERVABILIDAD ====================
 package "Observability Stack" as Observability #LemonChiffon {
     component [Prometheus\n:9090] as Prometheus #Orange
+    note right of Prometheus
+        **Scraping Config:**
+        - Interval: 5 seconds
+        - Path: /actuator/prometheus
+        
+        **Access:**
+        http://localhost:9090
+        http://localhost:9090/targets
+    end note
+    
     component [Grafana\n:3000] as Grafana #OrangeRed
+    note right of Grafana
+        **Access:**
+        http://localhost:3000
+        admin / admin
+        
+        **Dashboards:**
+        - ID 12900: Spring Boot APM
+        - ID 4701: JVM Micrometer
+        - ID 10280: Spring Boot Stats
+    end note
 }
 
 ' ==================== CONEXIONES PRINCIPALES ====================
-Client --> Gateway : HTTP/REST
+Client --> Gateway : "HTTP/REST Requests"
 
-Gateway --> AuthService : /api/auth/**
-Gateway --> CreditService : /api/credit/**
-Gateway --> RiskService : /api/risk/**
+Gateway --> CreditService : "Route /api/credit/**\nRoute /api/auth/**"
+Gateway --> RiskService : "Route /api/risk/**"
 
 ' ==================== CONEXIONES DE DATOS ====================
-AuthService --> DbAuth
-CreditService --> DbCredit
+CreditService --> DbCredit : "JDBC Connection"
+RiskService ..> DbCredit : "Read-only Access"
 
 ' ==================== COMUNICACIÓN INTER-SERVICIOS ====================
-CreditService --> RiskService : Evaluación\nde Riesgo
+CreditService --> RiskService : "Synchronous Risk\nEvaluation API"
 
 ' ==================== REGISTRO EN EUREKA ====================
-AuthService ..> EurekaServer : registra
-CreditService ..> EurekaServer : registra
-RiskService ..> EurekaServer : registra
-Gateway ..> EurekaServer : registra
+CreditService ..> EurekaServer : "Service Registration"
+RiskService ..> EurekaServer : "Service Registration"
+Gateway ..> EurekaServer : "Service Discovery"
 
 ' ==================== CONFIGURACIÓN CENTRALIZADA ====================
-AuthService ..> ConfigServer : obtiene config
-CreditService ..> ConfigServer : obtiene config
-RiskService ..> ConfigServer : obtiene config
-Gateway ..> ConfigServer : obtiene config
+CreditService ..> ConfigServer : "Fetch Configuration"
+RiskService ..> ConfigServer : "Fetch Configuration"
+Gateway ..> ConfigServer : "Fetch Configuration"
 
-' ==================== MÉTRICAS ====================
-Prometheus --> AuthService : scrape\n/actuator/prometheus
-Prometheus --> CreditService : scrape\n/actuator/prometheus
-Prometheus --> RiskService : scrape\n/actuator/prometheus
-Grafana --> Prometheus : queries
+' ==================== MÉTRICAS Y MONITOREO ====================
+Prometheus --> Gateway : "Scrape /actuator/prometheus\n(every 5s)"
+Prometheus --> CreditService : "Scrape /actuator/prometheus\n(every 5s)"
+Prometheus --> RiskService : "Scrape /actuator/prometheus\n(every 5s)"
+
+Grafana --> Prometheus : "PromQL Queries"
+DevOps --> Grafana : "View Dashboards"
+DevOps --> Prometheus : "Query Metrics"
 
 ' ==================== LEYENDA ====================
 legend right
-  |= Color |= Tipo |
+  |= Color |= Component Type |
   | <#CornflowerBlue> | API Gateway |
-  | <#LightGreen> | Auth Service |
-  | <#LightSeaGreen> | Credit Service |
-  | <#DarkSeaGreen> | Risk Service |
-  | <#MediumPurple> | Service Discovery |
-  | <#DarkKhaki> | Config Server |
-  | <#SteelBlue> | Database |
-  | <#Orange> | Monitoring |
+  | <#LightSeaGreen> | Credit Service (Auth + Business) |
+  | <#DarkSeaGreen> | Risk Assessment Service |
+  | <#MediumPurple> | Service Discovery (Eureka) |
+  | <#DarkKhaki> | Configuration Server |
+  | <#SteelBlue> | PostgreSQL Database |
+  | <#Orange> | Prometheus Monitoring |
+  | <#OrangeRed> | Grafana Visualization |
 endlegend
 
 @enduml

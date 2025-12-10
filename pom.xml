@@ -23,7 +23,6 @@
         <module>microservice-config</module>
         <module>microservice-eureka</module>
         <module>microservice-gateway</module>
-        <module>microservice-auth</module>
         <module>microservice-credit-application-service</module>
         <module>microservice-risk-central-service</module>
     </modules>

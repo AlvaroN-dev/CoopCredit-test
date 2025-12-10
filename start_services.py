@@ -5,6 +5,10 @@ import os
 
 def get_docker_cmd():
     """Determina el comando base de docker-compose, agregando sudo si es necesario."""
+    # En Windows no existe sudo ni os.geteuid()
+    if os.name == 'nt':
+        return ["docker-compose"]
+
     # Si no somos root, usamos sudo
     if os.geteuid() != 0:
         return ["sudo", "docker-compose"]
@@ -25,10 +29,9 @@ def start_services():
     dc = get_docker_cmd()
     print("\n🔄 Iniciando despliegue ordenado de microservicios...")
     
-    # 1. Bases de Datos (Postgres) - Requerimiento: Primero Postgres
-    dbs = ["postgres-auth", "postgres-credit"]
-    if not run_command(dc + ["up", "-d"] + dbs, "Iniciando Bases de Datos (Postgres)"): return
-    print("⏳ Esperando 15 segundos para inicialización de BDs...")
+    # 1. Base de Datos (Postgres Credit) - Solo una BD
+    if not run_command(dc + ["up", "-d", "postgres-credit"], "Iniciando Base de Datos (Postgres)"): return
+    print("⏳ Esperando 15 segundos para inicialización de BD...")
     time.sleep(15)
 
     # 2. Config Server
@@ -41,29 +44,34 @@ def start_services():
     print("⏳ Esperando 25 segundos para Eureka Server...")
     time.sleep(25)
 
-    # 4. Auth Service (OAuth)
-    if not run_command(dc + ["up", "-d", "microservice-auth"], "Iniciando Auth Service"): return
-    print("⏳ Esperando 20 segundos para Auth Service...")
-    time.sleep(20)
-
-    # 5. Otros Servicios (Credit, Risk, Observability)
-    other_services = [
+    # 4. Servicios de Negocio (Credit con Auth integrado, Risk)
+    business_services = [
         "microservice-credit-application-service",
-        "microservice-risk-central-service",
-        "prometheus",
-        "grafana"
+        "microservice-risk-central-service"
     ]
-    if not run_command(dc + ["up", "-d"] + other_services, "Iniciando Servicios de Negocio y Observabilidad"): return
-    print("⏳ Esperando 20 segundos para servicios de negocio...")
-    time.sleep(20)
+    if not run_command(dc + ["up", "-d"] + business_services, "Iniciando Servicios de Negocio (Credit + Risk)"): return
+    print("⏳ Esperando 30 segundos para servicios de negocio...")
+    time.sleep(30)
 
-    # 6. Gateway
+    # 5. Gateway
     if not run_command(dc + ["up", "-d", "microservice-gateway"], "Iniciando Gateway"): return
+    print("⏳ Esperando 15 segundos para Gateway...")
+    time.sleep(15)
+
+    # 6. Observabilidad (Prometheus y Grafana)
+    observability_services = ["prometheus", "grafana"]
+    if not run_command(dc + ["up", "-d"] + observability_services, "Iniciando Observabilidad (Prometheus + Grafana)"): return
     
     print("\n✨ ¡Despliegue completado! Todos los servicios están arriba.")
-    print("📊 Grafana: http://localhost:3000")
-    print("🔍 Eureka: http://localhost:8761")
-    print("🌐 Gateway: http://localhost:8080")
+    print("\n📌 URLs de Acceso:")
+    print("🌐 Gateway (API):        http://localhost:8080")
+    print("📚 Swagger UI:           http://localhost:8080/swagger-ui.html")
+    print("🔍 Eureka Dashboard:     http://localhost:8761")
+    print("📊 Grafana:              http://localhost:3000 (admin/admin)")
+    print("📈 Prometheus:           http://localhost:9090")
+    print("\n💡 Servicios disponibles:")
+    print("   - Solicitudes Crédito: http://localhost:8080/api/credit")
+    print("   - Evaluación Riesgo:  http://localhost:8080/api/risk")
 
 def stop_services():
     dc = get_docker_cmd()
@@ -82,7 +90,7 @@ def view_logs():
 def main():
     while True:
         print("\n--- GESTOR DE MICROSERVICIOS (CoopCredit) ---")
-        print("1. 🚀 Iniciar Servicios (Orden: DB -> Config -> Eureka -> Auth -> Otros -> Gateway)")
+        print("1. 🚀 Iniciar Servicios (Orden: DB -> Config -> Eureka -> Credit+Risk -> Gateway -> Observability)")
         print("2. 📜 Ver Logs en Tiempo Real")
         print("3. 🛑 Detener Todos los Servicios")
         print("4. 👋 Salir")

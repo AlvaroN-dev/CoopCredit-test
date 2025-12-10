@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,8 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/credit/applications")
-@Tag(name = "Credit Applications", description = "Operations related to credit applications")
+@Tag(name = "💳 Solicitudes de Crédito", description = "Gestión de solicitudes de crédito cooperativo")
+@SecurityRequirement(name = "bearerAuth")
 public class CreditApplicationController {
 
     private final CreateCreditApplicationUseCase createCreditApplicationUseCase;

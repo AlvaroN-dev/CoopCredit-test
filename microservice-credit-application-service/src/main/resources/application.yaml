@@ -3,3 +3,61 @@ spring:
     name: microservice-credit-application-service
   config:
     import: optional:configserver:${SPRING_CONFIG_IMPORT}
+
+# Spring Boot Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# Application Info
+info:
+  app:
+    name: CoopCredit Credit Application Service
+    description: Microservicio para gestión de créditos cooperativos y autenticación
+    version: 1.0.0
+    encoding: '@project.build.sourceEncoding@'
+    java:
+      version: '@java.version@'
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  info:
+    title: CoopCredit API - Credit & Authentication Service
+    description: API para gestión de créditos cooperativos, autenticación de usuarios y evaluación de riesgos
+    version: 1.0.0
+    contact:
+      name: CoopCredit Team
+      email: support@coopcredit.com

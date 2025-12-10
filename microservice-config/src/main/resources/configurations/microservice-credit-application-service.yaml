@@ -56,3 +56,13 @@ management:
     metrics:
       export:
         enabled: true
+
+# Springdoc OpenAPI configuration
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  show-actuator: false

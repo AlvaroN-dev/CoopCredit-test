@@ -1,13 +1,12 @@
 package com.riwi.microservice.coopcredit.credit.infrastructure.security;
 
+import com.riwi.microservice.coopcredit.credit.infrastructure.metrics.AuthenticationMetrics;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Counter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,15 +31,14 @@ import java.util.stream.Collectors;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final SecretKey secretKey;
+    private final AuthenticationMetrics authenticationMetrics;
 
-    private final Counter authFailureCounter;
-
-    public JwtAuthenticationFilter(MeterRegistry meterRegistry) {
-        this.authFailureCounter = Counter.builder("security.authentication.failures")
-                .description("Count of authentication failures")
-                .register(meterRegistry);
+    public JwtAuthenticationFilter(
+            @Value("${JWT_SECRET}") String jwtSecret,
+            AuthenticationMetrics authenticationMetrics) {
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        this.authenticationMetrics = authenticationMetrics;
     }
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -68,19 +66,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken authentication = 
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authenticationMetrics.recordTokenValidationSuccess();
                 }
             }
         } catch (ExpiredJwtException e) {
-            authFailureCounter.increment();
+            authenticationMetrics.recordTokenValidationFailure();
             logger.warn("JWT token is expired: " + e.getMessage());
         } catch (MalformedJwtException e) {
-            authFailureCounter.increment();
+            authenticationMetrics.recordTokenValidationFailure();
             logger.warn("Invalid JWT token: " + e.getMessage());
         } catch (SecurityException e) {
-            authFailureCounter.increment();
+            authenticationMetrics.recordTokenValidationFailure();
             logger.warn("JWT signature validation failed: " + e.getMessage());
         } catch (Exception e) {
-            authFailureCounter.increment();
+            authenticationMetrics.recordTokenValidationFailure();
             logger.error("Cannot set user authentication: " + e.getMessage());
         }
         
@@ -105,9 +104,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private Claims extractAllClaims(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
