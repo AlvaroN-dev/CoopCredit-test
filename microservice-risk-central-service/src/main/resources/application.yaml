@@ -1,3 +1,7 @@
 spring:
   application:
     name: microservice-risk-central-service
+  config:
+    import: optional:configserver:${SPRING_CONFIG_IMPORT:http://localhost:8888}
+
+

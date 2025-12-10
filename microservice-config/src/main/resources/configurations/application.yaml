@@ -1,0 +1,6 @@
+# Configuraciones compartidas para todos los microservicios
+logging:
+  level:
+    root: INFO
+    com.riwi: DEBUG
+    org.springframework.cloud: INFO

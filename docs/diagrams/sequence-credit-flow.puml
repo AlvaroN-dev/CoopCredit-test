@@ -1,0 +1,100 @@
+@startuml CoopCredit - Diagrama de Secuencia - Flujo de Solicitud de Crédito
+
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+title Flujo de Solicitud de Crédito - CoopCredit
+
+' ==================== PARTICIPANTES ====================
+actor "Cliente" as Client #LightBlue
+participant "API Gateway\n:8080" as Gateway #CornflowerBlue
+participant "Auth Service\n:8081" as Auth #LightGreen
+participant "Credit Service\n:8082" as Credit #LightSeaGreen
+participant "Risk Service\n:8083" as Risk #DarkSeaGreen
+database "PostgreSQL\nAuth" as DbAuth #SteelBlue
+database "PostgreSQL\nCredit" as DbCredit #SteelBlue
+
+' ==================== FLUJO DE AUTENTICACIÓN ====================
+== 1. Autenticación ==
+
+Client -> Gateway : POST /api/auth/login\n{username, password}
+activate Gateway
+Gateway -> Auth : Forward request
+activate Auth
+Auth -> DbAuth : Validar credenciales
+activate DbAuth
+DbAuth --> Auth : Datos del usuario
+deactivate DbAuth
+Auth -> Auth : Generar JWT Token
+Auth --> Gateway : {accessToken, refreshToken, expiresIn}
+deactivate Auth
+Gateway --> Client : JWT Token
+deactivate Gateway
+
+note over Client : El cliente almacena\nel JWT Token
+
+' ==================== FLUJO DE SOLICITUD DE CRÉDITO ====================
+== 2. Crear Solicitud de Crédito ==
+
+Client -> Gateway : POST /api/credit/applications\nAuthorization: Bearer JWT\n{affiliateId, monto, plazo, proposito}
+activate Gateway
+
+Gateway -> Gateway : Validar JWT Token
+note right : Extrae roles y userId
+
+Gateway -> Credit : Forward request
+activate Credit
+
+Credit -> Risk : POST /risk/evaluation\n{documento, monto, plazo}
+activate Risk
+Risk -> Risk : Calcular Score
+Risk -> Risk : Determinar Nivel de Riesgo
+Risk --> Credit : {score, nivelRiesgo, detalle}
+deactivate Risk
+
+Credit -> Credit : Evaluar resultado\nde riesgo
+
+alt Score >= 500 (Riesgo Aceptable)
+    Credit -> DbCredit : Guardar solicitud\nstatus=PENDIENTE
+    activate DbCredit
+    DbCredit --> Credit : Solicitud guardada
+    deactivate DbCredit
+    Credit --> Gateway : 201 Created\n{applicationNumber, status}
+else Score < 500 (Riesgo Alto)
+    Credit -> DbCredit : Guardar solicitud\nstatus=EN_REVISION
+    activate DbCredit
+    DbCredit --> Credit : Solicitud guardada
+    deactivate DbCredit
+    Credit --> Gateway : 201 Created\n{applicationNumber, status, riskWarning}
+end
+
+deactivate Credit
+Gateway --> Client : Response
+deactivate Gateway
+
+' ==================== FLUJO DE DECISIÓN (ANALISTA) ====================
+== 3. Decisión del Analista ==
+
+Client -> Gateway : PUT /api/credit/applications/{id}/decision\nAuthorization: Bearer JWT (ANALISTA)\n{decision: APROBADA, comentarios}
+activate Gateway
+
+Gateway -> Gateway : Validar JWT\nVerificar rol ANALISTA
+
+Gateway -> Credit : Forward request
+activate Credit
+
+Credit -> DbCredit : Actualizar status\nstatus=APROBADA
+activate DbCredit
+DbCredit --> Credit : Updated
+deactivate DbCredit
+
+Credit --> Gateway : 200 OK\n{applicationNumber, status: APROBADA}
+deactivate Credit
+
+Gateway --> Client : Response
+deactivate Gateway
+
+note over Client : Solicitud aprobada\nNotificación al afiliado
+
+@enduml

@@ -1,0 +1,96 @@
+@startuml CoopCredit - Arquitectura Hexagonal
+
+!theme plain
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+title Arquitectura Hexagonal - CoopCredit (Ports & Adapters)
+
+' ==================== ADAPTADORES DE ENTRADA (DRIVING) ====================
+package "Adaptadores de Entrada (Driving)" as DrivingAdapters #LightBlue {
+    component [REST Controllers] as RestControllers
+    component [Security Filters] as SecurityFilters
+}
+
+' ==================== CAPA DE APLICACIÓN ====================
+package "Capa de Aplicación" as ApplicationLayer #LightGreen {
+    component [DTOs] as DTOs
+    component [Mappers] as AppMappers
+    component [Use Cases Impl] as UseCasesImpl
+    component [Application Services] as AppServices
+}
+
+' ==================== NÚCLEO DE DOMINIO ====================
+package "Dominio (Core)" as DomainLayer #Gold {
+    
+    package "Puertos de Entrada" as InputPorts #Khaki {
+        component [CreateCreditApplicationUseCase] as ICreateCredit
+        component [RetrieveCreditApplicationUseCase] as IRetrieveCredit
+        component [ProcessCreditDecisionUseCase] as IProcessDecision
+        component [AuthenticateUserUseCase] as IAuthUser
+        component [RegisterUserUseCase] as IRegisterUser
+    }
+    
+    package "Modelos de Dominio" as DomainModels #Wheat {
+        component [CreditApplication] as CreditApp
+        component [Affiliate] as Affiliate
+        component [RiskEvaluation] as RiskEval
+        component [User] as User
+        component [Role] as Role
+    }
+    
+    package "Excepciones de Dominio" as DomainExceptions #MistyRose {
+        component [DomainException] as DomainEx
+        component [CreditApplicationNotFoundException] as CreditNotFound
+        component [AffiliateNotFoundException] as AffiliateNotFound
+    }
+    
+    package "Puertos de Salida" as OutputPorts #Khaki {
+        component [CreditApplicationRepositoryPort] as ICreditRepo
+        component [AffiliateRepositoryPort] as IAffiliateRepo
+        component [RiskAssessmentPort] as IRiskAssess
+        component [UserRepositoryPort] as IUserRepo
+        component [JwtTokenPort] as IJwtToken
+    }
+}
+
+' ==================== ADAPTADORES DE SALIDA (DRIVEN) ====================
+package "Adaptadores de Salida (Driven)" as DrivenAdapters #LightCoral {
+    component [JPA Repository Adapters] as JpaAdapters
+    component [JPA Entities] as JpaEntities
+    component [HTTP Clients] as HttpClients
+    component [JWT Adapter] as JwtAdapter
+    component [Password Encoder] as PasswordEncoder
+}
+
+' ==================== SISTEMAS EXTERNOS ====================
+database "PostgreSQL" as PostgreSQL #LightGray
+cloud "Risk Service" as RiskService #LightYellow
+cloud "Eureka Server" as Eureka #LightCyan
+
+' ==================== CONEXIONES ====================
+RestControllers --> ICreateCredit
+RestControllers --> IRetrieveCredit
+RestControllers --> IProcessDecision
+SecurityFilters --> IAuthUser
+
+UseCasesImpl --> ICreateCredit
+UseCasesImpl --> IRetrieveCredit
+UseCasesImpl --> IProcessDecision
+
+UseCasesImpl --> ICreditRepo
+UseCasesImpl --> IAffiliateRepo
+UseCasesImpl --> IRiskAssess
+
+JpaAdapters --> ICreditRepo
+JpaAdapters --> IAffiliateRepo
+JpaAdapters --> IUserRepo
+HttpClients --> IRiskAssess
+JwtAdapter --> IJwtToken
+
+JpaAdapters --> JpaEntities
+JpaEntities --> PostgreSQL
+HttpClients --> RiskService
+RestControllers ..> Eureka : registra
+
+@enduml

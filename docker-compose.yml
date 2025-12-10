@@ -1,0 +1,222 @@
+services:
+  # ==================== DATABASES ====================
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: ${DB_AUTH}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-credit:
+    image: postgres:16-alpine
+    container_name: postgres-credit
+    environment:
+      POSTGRES_DB: ${DB_CREDIT}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_credit_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U credit_user -d credit_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== CONFIG SERVER ====================
+  microservice-config:
+    build:
+      context: ./microservice-config
+      dockerfile: Dockerfile
+    container_name: microservice-config
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # ==================== EUREKA SERVER ====================
+  microservice-eureka:
+    build:
+      context: ./microservice-eureka
+      dockerfile: Dockerfile
+    container_name: microservice-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - EUREKA_INSTANCE_HOSTNAME=${EUREKA_INSTANCE_HOSTNAME}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+      - SPRING_CONFIG_IMPORT=${SPRING_CONFIG_IMPORT}
+    depends_on:
+      microservice-config:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # ==================== API GATEWAY ====================
+  microservice-gateway:
+    build:
+      context: ./microservice-gateway
+      dockerfile: Dockerfile
+    container_name: microservice-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CONFIG_IMPORT=${SPRING_CONFIG_IMPORT}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    depends_on:
+      microservice-eureka:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  # ==================== AUTH SERVICE ====================
+  microservice-auth:
+    build:
+      context: ./microservice-auth
+      dockerfile: Dockerfile
+    container_name: microservice-auth
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CONFIG_IMPORT=${SPRING_CONFIG_IMPORT}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+      - SPRING_DATASOURCE_URL=${PRING_DATASOURCE_URL_AUTH}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      microservice-eureka:
+        condition: service_healthy
+      postgres-auth:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+
+  # ==================== CREDIT APPLICATION SERVICE ====================
+  microservice-credit-application-service:
+    build:
+      context: ./microservice-credit-application-service
+      dockerfile: Dockerfile
+    container_name: microservice-credit-application-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CONFIG_IMPORT=${SPRING_CONFIG_IMPORT}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL_CREDIT}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      microservice-eureka:
+        condition: service_healthy
+      postgres-credit:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+
+  # ==================== RISK CENTRAL SERVICE ====================
+  microservice-risk-central-service:
+    build:
+      context: ./microservice-risk-central-service
+      dockerfile: Dockerfile
+    container_name: microservice-risk-central-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CONFIG_IMPORT=${SPRING_CONFIG_IMPORT}
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+    depends_on:
+      microservice-eureka:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
+
+  # ==================== OBSERVABILITY ====================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservices-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - microservices-network
+    depends_on:
+      - prometheus
+
+# ==================== NETWORKS ====================
+networks:
+  microservices-network:
+    driver: bridge
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres_auth_data:
+  postgres_credit_data:

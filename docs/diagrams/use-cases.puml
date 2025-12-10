@@ -1,0 +1,94 @@
+@startuml CoopCredit - Diagrama de Casos de Uso
+
+!theme plain
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+title Diagrama de Casos de Uso - CoopCredit
+
+' ==================== ACTORES ====================
+actor "Afiliado" as Afiliado #LightBlue
+actor "Analista" as Analista #LightGreen
+actor "Administrador" as Admin #LightCoral
+
+' ==================== SISTEMA DE AUTENTICACIÓN ====================
+rectangle "Sistema de Autenticación" as AuthSystem #AliceBlue {
+    usecase "UC01: Iniciar Sesión" as UC01
+    usecase "UC02: Registrar Usuario" as UC02
+    usecase "UC03: Refrescar Token" as UC03
+    usecase "UC04: Validar Token" as UC04
+}
+
+' ==================== SISTEMA DE SOLICITUDES DE CRÉDITO ====================
+rectangle "Sistema de Solicitudes de Crédito" as CreditSystem #Honeydew {
+    usecase "UC05: Crear Solicitud de Crédito" as UC05
+    usecase "UC06: Ver Mis Solicitudes" as UC06
+    usecase "UC07: Ver Todas las Solicitudes" as UC07
+    usecase "UC08: Aprobar/Rechazar Solicitud" as UC08
+    usecase "UC09: Consultar Estado de Solicitud" as UC09
+}
+
+' ==================== GESTIÓN DE AFILIADOS ====================
+rectangle "Gestión de Afiliados" as AffiliateSystem #LavenderBlush {
+    usecase "UC10: Crear Afiliado" as UC10
+    usecase "UC11: Actualizar Afiliado" as UC11
+    usecase "UC12: Eliminar Afiliado" as UC12
+    usecase "UC13: Listar Afiliados" as UC13
+}
+
+' ==================== SISTEMA DE EVALUACIÓN DE RIESGO ====================
+rectangle "Sistema de Evaluación de Riesgo" as RiskSystem #LemonChiffon {
+    usecase "UC14: Evaluar Riesgo" as UC14
+    usecase "UC15: Calcular Score de Riesgo" as UC15
+}
+
+' ==================== RELACIONES AFILIADO ====================
+Afiliado --> UC01
+Afiliado --> UC05
+Afiliado --> UC06
+Afiliado --> UC09
+
+' ==================== RELACIONES ANALISTA ====================
+Analista --> UC01
+Analista --> UC05
+Analista --> UC07
+Analista --> UC08
+Analista --> UC09
+Analista --> UC13
+
+' ==================== RELACIONES ADMIN ====================
+Admin --> UC01
+Admin --> UC02
+Admin --> UC03
+Admin --> UC04
+Admin --> UC05
+Admin --> UC07
+Admin --> UC08
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+
+' ==================== INCLUDE/EXTEND ====================
+UC05 ..> UC14 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC08 ..> UC07 : <<extend>>
+
+' ==================== NOTAS ====================
+note right of UC01
+  Autenticación mediante
+  credenciales (usuario/contraseña)
+  Retorna JWT Token
+end note
+
+note right of UC05
+  Incluye evaluación automática
+  de riesgo crediticio
+end note
+
+note right of UC08
+  Solo disponible para
+  Analistas y Administradores
+end note
+
+@enduml

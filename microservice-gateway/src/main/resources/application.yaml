@@ -1,3 +1,6 @@
 spring:
   application:
     name: microservice-gateway
+  config:
+    import: optional:configserver:${SPRING_CONFIG_IMPORT:http://localhost:8888}
+  

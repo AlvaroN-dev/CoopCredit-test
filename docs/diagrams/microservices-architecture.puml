@@ -1,0 +1,86 @@
+@startuml CoopCredit - Diagrama de Microservicios
+
+!theme plain
+skinparam componentStyle rectangle
+
+title Diagrama de Microservicios - CoopCredit
+
+' ==================== CLIENTE ====================
+actor "Cliente\n(App/Browser)" as Client #LightBlue
+
+' ==================== CAPA EDGE ====================
+package "Edge Layer" as EdgeLayer #AliceBlue {
+    component [API Gateway\n:8080] as Gateway #CornflowerBlue
+}
+
+' ==================== SERVICIOS DE INFRAESTRUCTURA ====================
+package "Infrastructure Services" as InfraServices #LightGray {
+    component [Config Server\n:8888] as ConfigServer #DarkKhaki
+    component [Eureka Server\n:8761] as EurekaServer #MediumPurple
+}
+
+' ==================== MICROSERVICIOS DE NEGOCIO ====================
+package "Business Microservices" as BusinessServices #Honeydew {
+    component [Auth Service\n:8081] as AuthService #LightGreen
+    component [Credit Service\n:8082] as CreditService #LightSeaGreen
+    component [Risk Service\n:8083] as RiskService #DarkSeaGreen
+}
+
+' ==================== CAPA DE DATOS ====================
+package "Data Layer" as DataLayer #LavenderBlush {
+    database "PostgreSQL Auth\n:5434" as DbAuth #SteelBlue
+    database "PostgreSQL Credit\n:5433" as DbCredit #SteelBlue
+}
+
+' ==================== OBSERVABILIDAD ====================
+package "Observability Stack" as Observability #LemonChiffon {
+    component [Prometheus\n:9090] as Prometheus #Orange
+    component [Grafana\n:3000] as Grafana #OrangeRed
+}
+
+' ==================== CONEXIONES PRINCIPALES ====================
+Client --> Gateway : HTTP/REST
+
+Gateway --> AuthService : /api/auth/**
+Gateway --> CreditService : /api/credit/**
+Gateway --> RiskService : /api/risk/**
+
+' ==================== CONEXIONES DE DATOS ====================
+AuthService --> DbAuth
+CreditService --> DbCredit
+
+' ==================== COMUNICACIÓN INTER-SERVICIOS ====================
+CreditService --> RiskService : Evaluación\nde Riesgo
+
+' ==================== REGISTRO EN EUREKA ====================
+AuthService ..> EurekaServer : registra
+CreditService ..> EurekaServer : registra
+RiskService ..> EurekaServer : registra
+Gateway ..> EurekaServer : registra
+
+' ==================== CONFIGURACIÓN CENTRALIZADA ====================
+AuthService ..> ConfigServer : obtiene config
+CreditService ..> ConfigServer : obtiene config
+RiskService ..> ConfigServer : obtiene config
+Gateway ..> ConfigServer : obtiene config
+
+' ==================== MÉTRICAS ====================
+Prometheus --> AuthService : scrape\n/actuator/prometheus
+Prometheus --> CreditService : scrape\n/actuator/prometheus
+Prometheus --> RiskService : scrape\n/actuator/prometheus
+Grafana --> Prometheus : queries
+
+' ==================== LEYENDA ====================
+legend right
+  |= Color |= Tipo |
+  | <#CornflowerBlue> | API Gateway |
+  | <#LightGreen> | Auth Service |
+  | <#LightSeaGreen> | Credit Service |
+  | <#DarkSeaGreen> | Risk Service |
+  | <#MediumPurple> | Service Discovery |
+  | <#DarkKhaki> | Config Server |
+  | <#SteelBlue> | Database |
+  | <#Orange> | Monitoring |
+endlegend
+
+@enduml
